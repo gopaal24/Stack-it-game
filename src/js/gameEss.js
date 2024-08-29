@@ -23,15 +23,14 @@ export class StackPlane{
 
     generateColor() {
         const hue = (this.index / this.totalStacks) * 360;
-        
         const saturation = 70;
         const lightness = 40;
-
         const color = new THREE.Color().setHSL(hue / 360, saturation / 100, lightness / 100);
-
-        console.log(`Stack ${this.index}: HSL(${hue}, ${saturation}%, ${lightness}%)`, color.getHexString());
-
         return color;
+    }
+    
+    getPosition(){
+        return this.stack.getWorldPosition(new THREE.Vector3());
     }
 
     moveStack(){
