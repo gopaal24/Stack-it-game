@@ -29,7 +29,7 @@ function addAdditionalStack(){
     if(stack_index%2 == 0) xSize = gameStack.resizeStack();
     else zSize = gameStack.resizeStack();
     stackList[0] = gameStack.stack;
-    gameStack = new StackPlane(game, stack_index, stackList[0], zSize, xSize);
+    gameStack = new StackPlane(game, stack_index, stackList[0]);
     gameStack.moveStack();
     stackGroup.add(gameStack.stack);
 }

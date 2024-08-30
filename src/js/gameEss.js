@@ -1,33 +1,37 @@
 import * as THREE from "three";
 
-export class StackPlane{
-    constructor(game, index, prevStack = null, xSize = 1, zSize = 1 ){
+export class StackPlane {
+    constructor(game, index, prevStack = null) {
         this.game = game;
         this.index = index;
         this.totalStacks = 100;
         this.prevStack = prevStack;
-        this.xSize = xSize;
-        this.zSize = zSize;
         this.createMesh();
         this.addStack();
+        this.stepIndex = 0;
+        this.totalSteps = 5; // Number of discrete positions
+        this.stepSize = 0.5; // Distance between each step
+        this.stepInterval = 500; // Time between steps in milliseconds
+        this.stepTimer = null;
         this.clock = new THREE.Clock();
     }
 
     createMesh() {
-        if(this.prevStack){
-            this.stack = this.prevStack.clone()
+        if (this.prevStack) {
+            this.stack = this.prevStack.clone();
             this.stack.material = new THREE.MeshStandardMaterial({ color: this.generateColor() });
-        }
-        else{
+            // Copy the scale from the previous stack
+            this.stack.scale.copy(this.prevStack.scale);
+        } else {
             this.stack = new THREE.Mesh(
-                new THREE.BoxGeometry(this.xSize, 0.3, this.zSize),
+                new THREE.BoxGeometry(1, 0.3, 1),
                 new THREE.MeshStandardMaterial({ color: this.generateColor() })
             );
         }
     }
 
     addStack() {
-        this.stack.position.y +=  0.3;
+        this.stack.position.y += 0.3;
         this.game.addToScene(this.stack);
     }
 
@@ -38,42 +42,67 @@ export class StackPlane{
         const color = new THREE.Color().setHSL(hue / 360, saturation / 100, lightness / 100);
         return color;
     }
-    
-    getPosition(){
+
+    getPosition() {
         return this.stack.getWorldPosition(new THREE.Vector3());
     }
 
-    moveStack(){
+    moveStack() {
         const time = this.clock.getElapsedTime();
-        if(this.index%2 == 0){
-            this.stack.position.x = 1.2*Math.cos(time);
-        }
-        else {
-            this.stack.position.z = 1.2*Math.cos(time);
+        if (this.index % 2 == 0) {
+            this.stack.position.x = this.prevStack.position.x + (this.prevStack.scale.x + 0.2)* Math.cos(time);
+        } else {
+            this.stack.position.z = this.prevStack.position.z + (this.prevStack.scale.z + 0.2)* Math.cos(time);
         }
         this.startAnimation();
     }
 
-    resizeStack(){
-        if(this.prevStack){
-            console.log(1 - this.prevStack.getWorldPosition(new THREE.Vector3()).distanceTo(this.stack.getWorldPosition(new THREE.Vector3())));
-            const scaleValue = Math.abs(1 - this.prevStack.getWorldPosition(new THREE.Vector3()).distanceTo(this.stack.getWorldPosition(new THREE.Vector3())));
-            if(this.index%2 == 0){
-                this.stack.scale.x = scaleValue;
+    resizeStack() {
+        if (this.prevStack) {
+            const prevPos = this.prevStack.position;
+            const currentPos = this.stack.position;
+            
+            let distance, direction, axis;
+            if (this.index % 2 === 0) {
+                distance = Math.abs(currentPos.x - prevPos.x);
+                direction = Math.sign(currentPos.x - prevPos.x);
+                axis = 'x';
+            } else {
+                distance = Math.abs(currentPos.z - prevPos.z);
+                direction = Math.sign(currentPos.z - prevPos.z);
+                axis = 'z';
             }
-            else {
-                this.stack.scale.z = scaleValue;
+
+            const prevSize = this.prevStack.scale[axis];
+            const overlap = Math.max(0, prevSize - distance);
+            const scaleValue = overlap / prevSize;
+
+            if (axis === 'x') {
+                this.stack.scale.x = scaleValue * this.prevStack.scale.x;
+                this.stack.position.x = prevPos.x + (direction * (prevSize - overlap) / 2);
+            } else {
+                this.stack.scale.z = scaleValue * this.prevStack.scale.z;
+                this.stack.position.z = prevPos.z + (direction * (prevSize - overlap) / 2);
             }
+
+            // Adjust the position to align with the edge of the previous stack
+            if (scaleValue > 0) {
+                if (axis === 'x') {
+                    this.stack.position.x = prevPos.x + (direction * (prevSize - overlap) / 2);
+                } else {
+                    this.stack.position.z = prevPos.z + (direction * (prevSize - overlap) / 2);
+                }
+            }
+
             return scaleValue;
         }
     }
 
-    startAnimation(){
-        this.animation = requestAnimationFrame(()=>this.moveStack());
+    startAnimation() {
+        this.animation = requestAnimationFrame(() => this.moveStack());
     }
 
-    stopStack(){
+    stopStack() {
         cancelAnimationFrame(this.animation);
     }
 }
-
