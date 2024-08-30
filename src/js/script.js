@@ -36,8 +36,8 @@ function addAdditionalStack(){
 
 document.addEventListener("click", ()=>{
     addAdditionalStack();
-    stackGroup.position.y -= 0.3;
+    stackGroup.position.y -= 0.1;
 })
 
-game.camera.position.y += 0.3;
+game.camera.position.y += 0.9;
 game.camera.position.x -= 1;

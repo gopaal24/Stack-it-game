@@ -8,10 +8,6 @@ export class StackPlane {
         this.prevStack = prevStack;
         this.createMesh();
         this.addStack();
-        this.stepIndex = 0;
-        this.totalSteps = 5; // Number of discrete positions
-        this.stepSize = 0.5; // Distance between each step
-        this.stepInterval = 500; // Time between steps in milliseconds
         this.stepTimer = null;
         this.clock = new THREE.Clock();
     }
@@ -20,18 +16,18 @@ export class StackPlane {
         if (this.prevStack) {
             this.stack = this.prevStack.clone();
             this.stack.material = new THREE.MeshStandardMaterial({ color: this.generateColor() });
-            // Copy the scale from the previous stack
+
             this.stack.scale.copy(this.prevStack.scale);
         } else {
             this.stack = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 0.3, 1),
+                new THREE.BoxGeometry(1, 0.1, 1),
                 new THREE.MeshStandardMaterial({ color: this.generateColor() })
             );
         }
     }
 
     addStack() {
-        this.stack.position.y += 0.3;
+        this.stack.position.y += 0.1;
         this.game.addToScene(this.stack);
     }
 
