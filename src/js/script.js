@@ -32,8 +32,8 @@ function addAdditionalStack(){
     gameStack.stopStack();
     stack_index += 1;
     phys.makeStaticCopy(gameStack.stack);
-    if(stack_index%2 == 0) xSize = gameStack.resizeStack();
-    else zSize = gameStack.resizeStack();
+    if(stack_index%2 == 0) xSize = phys.makeFallingStack(gameStack.resizeStack());
+    else zSize = phys.makeFallingStack(gameStack.resizeStack());
     stackList[0] = gameStack.stack;
     gameStack = new StackPlane(game, stack_index, stackList[0]);
     gameStack.moveStack();

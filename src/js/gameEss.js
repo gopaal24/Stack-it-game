@@ -27,11 +27,6 @@ export class StackPlane {
         }
     }
 
-    setWorldPhysics(){
-        this.world.gravity.set(0, -9.8, 0);
-        
-    }
-
     addStack() {
         this.stack.position.y += 0.1;
         this.game.addToScene(this.stack);
@@ -95,7 +90,27 @@ export class StackPlane {
                 }
             }
 
-            return scaleValue;
+            
+            return this.slicedStack(scaleValue);
+        }
+    }
+
+    slicedStack(scaleValue){
+        if(this.index%2 == 0){
+            const slicedStack = new THREE.Mesh(new THREE.BoxGeometry(this.prevStack.scale.x - scaleValue, 0.1, this.prevStack.scale.z),new THREE.MeshStandardMaterial({ color: this.generateColor() }));
+            slicedStack.position.y = this.stack.position.y - 0.1;
+            slicedStack.position.x = this.stack.position.x + slicedStack.scale.x/2;
+            
+            this.game.addToScene(slicedStack)
+            return slicedStack;
+        }
+        else{
+            const slicedStack = new THREE.Mesh(new THREE.BoxGeometry(this.prevStack.scale.x, 0.1, this.prevStack.scale.z - scaleValue),new THREE.MeshStandardMaterial({ color: this.generateColor() }));
+            slicedStack.position.y = this.stack.position.y-0.1;
+            slicedStack.position.z = this.stack.position.z + slicedStack.scale.z/2;
+
+            this.game.addToScene(slicedStack)
+            return slicedStack;
         }
     }
 
