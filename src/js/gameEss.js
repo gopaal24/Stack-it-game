@@ -10,6 +10,7 @@ export class StackPlane {
         this.addStack();
         this.stepTimer = null;
         this.clock = new THREE.Clock();
+
     }
 
     createMesh() {
@@ -26,13 +27,18 @@ export class StackPlane {
         }
     }
 
+    setWorldPhysics(){
+        this.world.gravity.set(0, -9.8, 0);
+        
+    }
+
     addStack() {
         this.stack.position.y += 0.1;
         this.game.addToScene(this.stack);
     }
 
     generateColor() {
-        const hue = (this.index / this.totalStacks) * 360;
+        const hue = ((this.index + 15 )/ this.totalStacks) * 360;
         const saturation = 70;
         const lightness = 40;
         const color = new THREE.Color().setHSL(hue / 360, saturation / 100, lightness / 100);
@@ -46,9 +52,9 @@ export class StackPlane {
     moveStack() {
         const time = this.clock.getElapsedTime();
         if (this.index % 2 == 0) {
-            this.stack.position.x = this.prevStack.position.x + (this.prevStack.scale.x + 0.2)* Math.cos(time);
+            this.stack.position.x = this.prevStack.position.x + (this.prevStack.scale.x + this.prevStack.scale.x*0.5)* Math.cos(time);
         } else {
-            this.stack.position.z = this.prevStack.position.z + (this.prevStack.scale.z + 0.2)* Math.cos(time);
+            this.stack.position.z = this.prevStack.position.z + (this.prevStack.scale.z + this.prevStack.scale.z*0.5)* Math.cos(time);
         }
         this.startAnimation();
     }
@@ -81,7 +87,6 @@ export class StackPlane {
                 this.stack.position.z = prevPos.z + (direction * (prevSize - overlap) / 2);
             }
 
-            // Adjust the position to align with the edge of the previous stack
             if (scaleValue > 0) {
                 if (axis === 'x') {
                     this.stack.position.x = prevPos.x + (direction * (prevSize - overlap) / 2);

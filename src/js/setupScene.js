@@ -4,6 +4,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 export class ThreejsScene{
     constructor(){
         this.scene = new THREE.Scene();
+        this.scene.background = new THREE.Color("#844CB7");
         const aspect = window.innerWidth / window.innerHeight;
         const frustumSize = 2;
         this.camera = new THREE.OrthographicCamera(
