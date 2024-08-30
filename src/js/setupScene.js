@@ -45,3 +45,5 @@ export class ThreejsScene{
         requestAnimationFrame(() => this.animate());
     }
 }
+
+export const group = new THREE.Group();
