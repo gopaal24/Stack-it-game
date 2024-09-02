@@ -19,7 +19,7 @@ export class ThreejsScene{
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        this.camera.position.z = 1;
+        this.camera.position.set(2, 6, 2);
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
         this.addLights();
@@ -27,6 +27,12 @@ export class ThreejsScene{
 
     initiate(){
         this.animate();
+        window.addEventListener("resize", this.windowResizeHandler)
+    }
+
+    windowResizeHandler(){
+        console.log(this.renderer)
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
     addLights(){
@@ -38,6 +44,10 @@ export class ThreejsScene{
 
     addToScene(obj){
         this.scene.add(obj);
+    }
+
+    removeFromScene(obj){
+        this.scene.remove(obj);
     }
 
     animate(){

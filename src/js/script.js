@@ -2,48 +2,48 @@ import { ThreejsScene, group } from "./setupScene.js";
 import { StackPlane } from "./gameEss.js";
 import { GamePhys } from "./gamePhy.js";
 
-import * as THREE from "three"; 
-
-const game = new ThreejsScene;
-let stack_index = 1;
+const game = new ThreejsScene();
+let stack_index = 0;
 let stackGroup = group;
-let xSize = 1, zSize = 1;
-
-const phys = new GamePhys(game);
+let stackList = [];
+let fallingList = []
 
 game.initiate();
 
-const initialStack = new StackPlane(game, 0);
+const initialStack = new StackPlane(game, stack_index);
+stack_index += 1;
 
-phys.makeStaticCopy(initialStack.stack);
-
-let stackList = [];
-
-stackList.push(initialStack.stack);
+stackList.push(initialStack);
 
 game.addToScene(stackGroup);
 stackGroup.add(initialStack.stack);
 
-let gameStack = new StackPlane(game, stack_index, stackList[0]);
+let gameStack = new StackPlane(game, stack_index, stackList[stack_index - 1]);
+stack_index += 1;
 gameStack.moveStack();
 stackGroup.add(gameStack.stack);
 
-function addAdditionalStack(){
-    gameStack.stopStack();
-    stack_index += 1;
-    phys.makeStaticCopy(gameStack.stack);
-    if(stack_index%2 == 0) xSize = phys.makeFallingStack(gameStack.resizeStack());
-    else zSize = phys.makeFallingStack(gameStack.resizeStack());
-    stackList[0] = gameStack.stack;
-    gameStack = new StackPlane(game, stack_index, stackList[0]);
-    gameStack.moveStack();
-    stackGroup.add(gameStack.stack);
+stackList.push(gameStack);
+
+const phys = new GamePhys(game, stackList);
+phys.makeStaticCopy(initialStack.stack)
+
+function addAdditionalStack() {
+  gameStack.stopStack();
+  const fallingStack = gameStack.resizeStack();
+  stackList.push(gameStack);
+  phys.makeStaticCopy(gameStack.stack)
+  phys.makeFallingStack(fallingStack);
+  fallingList[0] = fallingStack;
+  gameStack = new StackPlane(game, stack_index, stackList[stack_index]);
+  stack_index += 1;
+  gameStack.moveStack();
+  stackGroup.add(gameStack.stack);
 }
 
-document.addEventListener("click", ()=>{
-    addAdditionalStack();
-    stackGroup.position.y -= 0.1;
-})
-
-game.camera.position.y += 0.9;
-game.camera.position.x -= 1;
+document.addEventListener("click", () => {
+    if(fallingList[0]) game.removeFromScene(fallingList[0])
+  addAdditionalStack();
+  stackGroup.position.y -= 0.1;
+  phys.shiftStaticDown();
+});

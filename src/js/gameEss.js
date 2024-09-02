@@ -1,124 +1,178 @@
 import * as THREE from "three";
 
 export class StackPlane {
-    constructor(game, index, prevStack = null) {
-        this.game = game;
-        this.index = index;
-        this.totalStacks = 100;
-        this.prevStack = prevStack;
-        this.createMesh();
-        this.addStack();
-        this.stepTimer = null;
-        this.clock = new THREE.Clock();
+  constructor(game, index, prevStack = null) {
+    this.game = game;
+    this.index = index;
+    this.totalStacks = 100;
+    this.prevStack = prevStack;
+    this.createMesh();
+    this.addStack();
+    this.stepTimer = null;
+    this.clock = new THREE.Clock();
+    this.time = 0;
+  }
 
+  createMesh() {
+    if (this.prevStack) {
+      const prevStackSize = this.prevStack.stack.geometry.parameters;
+      this.stack = new THREE.Mesh(
+        new THREE.BoxGeometry(
+          prevStackSize.width,
+          prevStackSize.height,
+          prevStackSize.depth
+        ),
+        new THREE.MeshStandardMaterial({ color: this.generateColor() })
+      );
+      this.stack.position.copy(this.prevStack.stack.position);
+    } else {
+      this.stack = new THREE.Mesh(
+        new THREE.BoxGeometry(1, 0.1, 1),
+        new THREE.MeshStandardMaterial({ color: this.generateColor() })
+      );
+    }
+  }
+
+  addStack() {
+    this.stack.position.y = this.index * 0.1;
+    this.game.addToScene(this.stack);
+  }
+
+  generateColor() {
+    const hue = ((this.index + 15) / this.totalStacks) * 360;
+    const saturation = 70;
+    const lightness = 40;
+    const color = new THREE.Color().setHSL(
+      hue / 360,
+      saturation / 100,
+      lightness / 100
+    );
+    return color;
+  }
+
+  getPosition() {
+    return this.stack.getWorldPosition(new THREE.Vector3());
+  }
+
+  moveStack() {
+    const time = this.clock.getElapsedTime();
+    const prevStackSize = this.prevStack.stack.geometry.parameters;
+    if (this.index % 2 == 0) {
+      this.stack.position.x =
+        this.prevStack.stack.position.x +
+        (prevStackSize.width + prevStackSize.width * 0.2) * Math.cos(time);
+    } else {
+      this.stack.position.z =
+        this.prevStack.stack.position.z +
+        (prevStackSize.depth + prevStackSize.depth * 0.2) * Math.cos(time);
+    }
+    this.startAnimation();
+  }
+
+  resizeStack() {
+    let newSize;
+    const oldSize = this.prevStack.stack.geometry.parameters;
+    newSize = {
+      x: oldSize.width,
+      y: oldSize.height,
+      z: oldSize.depth,
+    };
+    let distance, direction, axis;
+
+    if (this.index % 2 === 0) {
+      distance = Math.abs(
+        this.stack.position.x - this.prevStack.stack.position.x
+      );
+      direction = Math.sign(
+        this.stack.position.x - this.prevStack.stack.position.x
+      );
+      axis = "x";
+      if (distance > oldSize.width) {
+        newSize.x = 0;
+        newSize.y = 0.1;
+        newSize.z = 1;
+        this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
+        return this.slicedStack(axis, direction, distance, oldSize, newSize);
+      }
+    } else {
+      distance = Math.abs(
+        this.stack.position.z - this.prevStack.stack.position.z
+      );
+      direction = Math.sign(
+        this.stack.position.z - this.prevStack.stack.position.z
+      );
+      axis = "z";
+      if (distance > oldSize.depth) {
+        newSize.x = 1;
+        newSize.y = 0.1;
+        newSize.z = 0;
+        this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
+        return this.slicedStack(axis, direction, distance, oldSize, newSize);
+      }
     }
 
-    createMesh() {
-        if (this.prevStack) {
-            this.stack = this.prevStack.clone();
-            this.stack.material = new THREE.MeshStandardMaterial({ color: this.generateColor() });
-
-            this.stack.scale.copy(this.prevStack.scale);
-        } else {
-            this.stack = new THREE.Mesh(
-                new THREE.BoxGeometry(1, 0.1, 1),
-                new THREE.MeshStandardMaterial({ color: this.generateColor() })
-            );
-        }
+    if (axis === "x") {
+      newSize.x = oldSize.width - distance;
+      this.stack.position.x =
+        this.prevStack.stack.position.x +
+        direction * (oldSize.width / 2 - newSize.x / 2);
+    } else {
+      newSize.z = oldSize.depth - distance;
+      this.stack.position.z =
+        this.prevStack.stack.position.z +
+        direction * (oldSize.depth / 2 - newSize.z / 2);
     }
 
-    addStack() {
-        this.stack.position.y += 0.1;
-        this.game.addToScene(this.stack);
+    this.stack.geometry = new THREE.BoxGeometry(
+      newSize.x,
+      newSize.y,
+      newSize.z
+    );
+
+    return this.slicedStack(axis, direction, distance, oldSize, newSize);
+  }
+
+  slicedStack(axis, direction, distance, oldSize, currSize) {
+    const fallStackSize = {
+      x: currSize.x,
+      y: currSize.y,
+      z: currSize.z,
+    };
+
+    const fallStackPos = {
+      x: this.stack.position.x,
+      y: this.stack.position.y - this.index * 0.1,
+      z: this.stack.position.z,
+    };
+
+    if (axis == "x") {
+      fallStackSize.x = oldSize.width - currSize.x;
+      fallStackPos.x =
+        this.stack.position.x +
+        direction * (currSize.x / 2 + fallStackSize.x / 2);
+    } else {
+      fallStackSize.z = oldSize.depth - currSize.z;
+      fallStackPos.z =
+        this.stack.position.z +
+        direction * (currSize.z / 2 + fallStackSize.z / 2);
     }
 
-    generateColor() {
-        const hue = ((this.index + 15 )/ this.totalStacks) * 360;
-        const saturation = 70;
-        const lightness = 40;
-        const color = new THREE.Color().setHSL(hue / 360, saturation / 100, lightness / 100);
-        return color;
-    }
+    const fallingStack = new THREE.Mesh(
+      new THREE.BoxGeometry(fallStackSize.x, fallStackSize.y, fallStackSize.z),
+      this.stack.material
+    );
 
-    getPosition() {
-        return this.stack.getWorldPosition(new THREE.Vector3());
-    }
+    fallingStack.position.copy(fallStackPos);
+    this.game.addToScene(fallingStack);
 
-    moveStack() {
-        const time = this.clock.getElapsedTime();
-        if (this.index % 2 == 0) {
-            this.stack.position.x = this.prevStack.position.x + (this.prevStack.scale.x + this.prevStack.scale.x*0.5)* Math.cos(time);
-        } else {
-            this.stack.position.z = this.prevStack.position.z + (this.prevStack.scale.z + this.prevStack.scale.z*0.5)* Math.cos(time);
-        }
-        this.startAnimation();
-    }
+    return fallingStack;
+  }
 
-    resizeStack() {
-        if (this.prevStack) {
-            const prevPos = this.prevStack.position;
-            const currentPos = this.stack.position;
-            
-            let distance, direction, axis;
-            if (this.index % 2 === 0) {
-                distance = Math.abs(currentPos.x - prevPos.x);
-                direction = Math.sign(currentPos.x - prevPos.x);
-                axis = 'x';
-            } else {
-                distance = Math.abs(currentPos.z - prevPos.z);
-                direction = Math.sign(currentPos.z - prevPos.z);
-                axis = 'z';
-            }
+  startAnimation() {
+    this.animation = requestAnimationFrame(() => this.moveStack());
+  }
 
-            const prevSize = this.prevStack.scale[axis];
-            const overlap = Math.max(0, prevSize - distance);
-            const scaleValue = overlap / prevSize;
-
-            if (axis === 'x') {
-                this.stack.scale.x = scaleValue * this.prevStack.scale.x;
-                this.stack.position.x = prevPos.x + (direction * (prevSize - overlap) / 2);
-            } else {
-                this.stack.scale.z = scaleValue * this.prevStack.scale.z;
-                this.stack.position.z = prevPos.z + (direction * (prevSize - overlap) / 2);
-            }
-
-            if (scaleValue > 0) {
-                if (axis === 'x') {
-                    this.stack.position.x = prevPos.x + (direction * (prevSize - overlap) / 2);
-                } else {
-                    this.stack.position.z = prevPos.z + (direction * (prevSize - overlap) / 2);
-                }
-            }
-
-            
-            return this.slicedStack(scaleValue);
-        }
-    }
-
-    slicedStack(scaleValue){
-        if(this.index%2 == 0){
-            const slicedStack = new THREE.Mesh(new THREE.BoxGeometry(this.prevStack.scale.x - scaleValue, 0.1, this.prevStack.scale.z),new THREE.MeshStandardMaterial({ color: this.generateColor() }));
-            slicedStack.position.y = this.stack.position.y - 0.1;
-            slicedStack.position.x = this.stack.position.x + slicedStack.scale.x/2;
-            
-            this.game.addToScene(slicedStack)
-            return slicedStack;
-        }
-        else{
-            const slicedStack = new THREE.Mesh(new THREE.BoxGeometry(this.prevStack.scale.x, 0.1, this.prevStack.scale.z - scaleValue),new THREE.MeshStandardMaterial({ color: this.generateColor() }));
-            slicedStack.position.y = this.stack.position.y-0.1;
-            slicedStack.position.z = this.stack.position.z + slicedStack.scale.z/2;
-
-            this.game.addToScene(slicedStack)
-            return slicedStack;
-        }
-    }
-
-    startAnimation() {
-        this.animation = requestAnimationFrame(() => this.moveStack());
-    }
-
-    stopStack() {
-        cancelAnimationFrame(this.animation);
-    }
+  stopStack() {
+    cancelAnimationFrame(this.animation);
+  }
 }
