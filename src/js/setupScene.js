@@ -19,7 +19,7 @@ export class ThreejsScene{
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(this.renderer.domElement);
 
-        this.camera.position.set(2, 6, 2);
+        this.camera.position.set(2, 3, 2);
         this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
         this.addLights();
@@ -38,8 +38,11 @@ export class ThreejsScene{
     addLights(){
         const ambient =  new THREE.AmbientLight();
         const directional = new THREE.DirectionalLight();
+        const directional2 = new THREE.DirectionalLight();
+        directional2.position.set(1,1,1);
         this.addToScene(ambient)
         this.addToScene(directional)
+        this.addToScene(directional2)
     }
 
     addToScene(obj){
