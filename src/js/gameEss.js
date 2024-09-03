@@ -95,7 +95,7 @@ export class StackPlane {
         this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
         return this.slicedStack(axis, direction, distance, oldSize, newSize, true);
       }
-      else if(distance < oldSize.width*0.1) {
+      else if(distance < oldSize.width*0.05) {
         this.stack.geometry = new THREE.BoxGeometry(newSize.x, newSize.y, newSize.z);
         this.stack.position.x = this.prevStack.stack.position.x;
         return this.slicedStack(axis, direction, distance, oldSize, newSize, false);
@@ -118,7 +118,7 @@ export class StackPlane {
         this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
         return this.slicedStack(axis, direction, distance, oldSize, newSize, true);
       }
-      else if(distance < oldSize.depth*0.1) {
+      else if(distance < oldSize.depth*0.05) {
         this.stack.geometry = new THREE.BoxGeometry(newSize.x, newSize.y, newSize.z);
         this.stack.position.z = this.prevStack.stack.position.z;
         return this.slicedStack(axis, direction, distance, oldSize, newSize, false);
