@@ -79,6 +79,7 @@ export class StackPlane {
     };
     let distance, direction, axis;
 
+
     if (this.index % 2 === 0) {
       distance = Math.abs(
         this.stack.position.x - this.prevStack.stack.position.x
@@ -92,9 +93,17 @@ export class StackPlane {
         newSize.y = 0.1;
         newSize.z = 1;
         this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
-        return this.slicedStack(axis, direction, distance, oldSize, newSize);
+        return this.slicedStack(axis, direction, distance, oldSize, newSize, true);
       }
-    } else {
+      else if(distance < oldSize.width*0.1) {
+        this.stack.geometry = new THREE.BoxGeometry(newSize.x, newSize.y, newSize.z);
+        this.stack.position.x = this.prevStack.stack.position.x;
+        return this.slicedStack(axis, direction, distance, oldSize, newSize, false);
+      }
+    } 
+    
+    
+    else {
       distance = Math.abs(
         this.stack.position.z - this.prevStack.stack.position.z
       );
@@ -107,9 +116,15 @@ export class StackPlane {
         newSize.y = 0.1;
         newSize.z = 0;
         this.stack.geometry = new THREE.BoxGeometry(0, 0, 0);
-        return this.slicedStack(axis, direction, distance, oldSize, newSize);
+        return this.slicedStack(axis, direction, distance, oldSize, newSize, true);
+      }
+      else if(distance < oldSize.depth*0.1) {
+        this.stack.geometry = new THREE.BoxGeometry(newSize.x, newSize.y, newSize.z);
+        this.stack.position.z = this.prevStack.stack.position.z;
+        return this.slicedStack(axis, direction, distance, oldSize, newSize, false);
       }
     }
+
 
     if (axis === "x") {
       newSize.x = oldSize.width - distance;
@@ -129,10 +144,10 @@ export class StackPlane {
       newSize.z
     );
 
-    return this.slicedStack(axis, direction, distance, oldSize, newSize);
+    return this.slicedStack(axis, direction, distance, oldSize, newSize, true);
   }
 
-  slicedStack(axis, direction, distance, oldSize, currSize) {
+  slicedStack(axis, direction, distance, oldSize, currSize, shouldFall) {
     const fallStackSize = {
       x: currSize.x,
       y: currSize.y,
@@ -145,17 +160,25 @@ export class StackPlane {
       z: this.stack.position.z,
     };
 
-    if (axis == "x") {
-      fallStackSize.x = oldSize.width - currSize.x;
-      fallStackPos.x =
-        this.stack.position.x +
-        direction * (currSize.x / 2 + fallStackSize.x / 2);
-    } else {
-      fallStackSize.z = oldSize.depth - currSize.z;
-      fallStackPos.z =
-        this.stack.position.z +
-        direction * (currSize.z / 2 + fallStackSize.z / 2);
+    if(shouldFall){
+      if (axis == "x") {
+        fallStackSize.x = oldSize.width - currSize.x;
+        fallStackPos.x =
+          this.stack.position.x +
+          direction * (currSize.x / 2 + fallStackSize.x / 2);
+      } else {
+        fallStackSize.z = oldSize.depth - currSize.z;
+        fallStackPos.z =
+          this.stack.position.z +
+          direction * (currSize.z / 2 + fallStackSize.z / 2);
+      }
     }
+    else{
+      fallStackSize.x = 0;
+      fallStackSize.y = 0;
+      fallStackSize.z = 0;
+    }
+
 
     const fallingStack = new THREE.Mesh(
       new THREE.BoxGeometry(fallStackSize.x, fallStackSize.y, fallStackSize.z),

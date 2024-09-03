@@ -17,6 +17,7 @@ export class ThreejsScene{
         );
         this.renderer = new THREE.WebGLRenderer({antialias: true});
         this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio)
         document.body.appendChild(this.renderer.domElement);
 
         this.camera.position.set(2, 3, 2);

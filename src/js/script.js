@@ -44,6 +44,8 @@ function addAdditionalStack() {
 document.addEventListener("click", () => {
     if(fallingList[0]) game.removeFromScene(fallingList[0])
   addAdditionalStack();
-  stackGroup.position.y -= 0.1;
+  gsap.to(stackGroup.position, {
+    y: -(stack_index - 2)*0.1
+  })
   phys.shiftStaticDown();
 });
