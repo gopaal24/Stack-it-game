@@ -6,7 +6,12 @@ const game = new ThreejsScene();
 let stack_index = 0;
 let stackGroup = group;
 let stackList = [];
-let fallingList = []
+let fallingList = [];
+let gameStarted = false;
+let score = 0;
+
+const playBtn = document.querySelector(".play-btn > img");
+
 
 game.initiate();
 
@@ -42,11 +47,23 @@ function addAdditionalStack() {
 }
 
 document.addEventListener("click", () => {
+  if(gameStarted){
+    score += 1;
+    document.querySelector(".scoreEl > p").textContent = `Score: ${score}`
     if(fallingList[0]) game.removeFromScene(fallingList[0])
-  addAdditionalStack();
-  gsap.to(stackGroup.position, {
-    y: -(stack_index - 2)*0.1,
-    duration: 0.2
-  })
-  phys.shiftStaticDown();
+    addAdditionalStack();
+    gsap.to(stackGroup.position, {
+      y: -(stack_index - 2)*0.1,
+      duration: 0.2
+    })
+    phys.shiftStaticDown();
+  }
 });
+
+playBtn.addEventListener("click", ()=>{
+  console.log("clicked")
+  document.querySelector(".main-container").style.display = "none";
+  setInterval(()=>{
+    gameStarted = true
+  }, 200)
+})

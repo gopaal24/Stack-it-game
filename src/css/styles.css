@@ -1,0 +1,46 @@
+@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+
+*{
+    margin: 0px;
+    padding: 0px;
+}
+
+body{
+    font-family: "Tiny5", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.main-container{
+    position: absolute;
+    height: 100vh;
+    width: 100vw;
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.title{
+    text-align: center;
+    font-size: 90px;
+    color: beige;
+}
+
+.play-btn {
+    padding-top: 35px;
+    text-align: center;
+}
+
+.play-btn > img{
+    width: 100px;
+    cursor: pointer;
+}
+
+.scoreEl{
+    position: fixed;
+    top: 30px;
+    right: 60px;
+    color: beige;
+    font-size: 45px;
+}
